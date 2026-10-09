@@ -1,0 +1,46 @@
+import { Schema, model } from 'mongoose';
+import { z } from 'zod';
+ 
+export interface ICar {
+  make: string;
+  model: string;
+  year?: number;
+ 
+}
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     CreateCarInput:
+ *       type: object
+ *       required:
+ *         - make
+ *         - model
+ *       properties:
+ *         make:
+ *           type: string
+ *           example: Renault
+ *         model:
+ *           type: string
+ *           example: Megane
+ *         year:
+ *           type: integer
+ *           example: 2010
+ */
+export const carZodSchema = z.object({
+  make: z.string().min(1).max(100),
+  model: z.string().min(1).max(100),
+  year: z.number().min(1950).optional()
+});
+ 
+ 
+const carSchema = new Schema<ICar>(
+  {
+    make: { type: String, required: true },
+    model: { type: String, required: true },
+    year: { type: Number, min: 1950, required: false },
+  },
+  { timestamps: true }
+);
+ 
+export const CarModel = model<ICar>('Car', carSchema);
