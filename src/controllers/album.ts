@@ -4,7 +4,6 @@ import { AlbumService } from '../services/albums';
  import { ArtistService } from '../services/artist';
 
 const albumService = new AlbumService();
-const artistService = new ArtistService();
 
 const getId = (req: Request): string => String(req.params.id);
 
