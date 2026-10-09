@@ -1,39 +1,136 @@
-@endpoint = http://localhost:3001/api/v1/cars
+@endpoint = http://localhost:3001/api/v1/albums
+@artists = http://localhost:3001/api/v1/artists
+@key = 123456
 
-###
-# @name postACar 
-
-POST {{endpoint}} HTTP/1.1
+### Setup - make an artist for the albums
+# @name postArtist
+POST {{artists}}
 content-type: application/json
-x-api-key: 123456
+x-api-key: {{key}}
 
 {
-   "make": "Ford",
-   "model": "Ford"
+  "name": "Radiohead",
+  "country": "United Kingdom",
+  "formedYear": 1985
 }
 
 ###
-@newCar = {{postACar.response.body._id}}
+@artistId = {{postArtist.response.body._id}}
 
-
-###
-GET  {{endpoint}} HTTP/3.0
+### POST - valid album
+# @name postAlbum
+POST {{endpoint}}
 content-type: application/json
-x-api-key: 123456
-
-###
-
-DELETE  {{endpoint}}/id HTTP/3.0
-content-type: application/json
-x-api-key: 123456
-
-###
-
-PUT  {{endpoint}}/sillycarID HTTP/3.0
-content-type: application/json
-x-api-key: 123456
+x-api-key: {{key}}
 
 {
-   "make": "Ford",
-   "model": "Ford"
+  "title": "OK Computer",
+  "artist": "{{artistId}}",
+  "releaseYear": 1997,
+  "genre": "Rock",
+  "rating": 9.5
 }
+
+###
+@albumId = {{postAlbum.response.body._id}}
+
+### POST - fails validation (no title, bad rating)
+POST {{endpoint}}
+content-type: application/json
+x-api-key: {{key}}
+
+{
+  "artist": "{{artistId}}",
+  "rating": 50
+}
+
+### POST - fails, artist does not exist
+POST {{endpoint}}
+content-type: application/json
+x-api-key: {{key}}
+
+{
+  "title": "Ghost Album",
+  "artist": "000000000000000000000000"
+}
+
+### GET - all albums
+GET {{endpoint}}
+x-api-key: {{key}}
+
+### GET - one album (works, artist is filled in)
+GET {{endpoint}}/{{albumId}}
+x-api-key: {{key}}
+
+### GET - one album (fails, not found)
+GET {{endpoint}}/000000000000000000000000
+x-api-key: {{key}}
+
+### GET - one album (fails, bad id)
+GET {{endpoint}}/abc
+x-api-key: {{key}}
+
+### GET - filter by genre
+GET {{endpoint}}?genre=Rock
+x-api-key: {{key}}
+
+### GET - filter by artist
+GET {{endpoint}}?artist={{artistId}}
+x-api-key: {{key}}
+
+### GET - sort by year, newest first
+GET {{endpoint}}?sort=-releaseYear
+x-api-key: {{key}}
+
+### GET - only some fields
+GET {{endpoint}}?fields=title,genre
+x-api-key: {{key}}
+
+### GET - paging
+GET {{endpoint}}?page=1&limit=2
+x-api-key: {{key}}
+
+### PUT - works
+PUT {{endpoint}}/{{albumId}}
+content-type: application/json
+x-api-key: {{key}}
+
+{
+  "title": "OK Computer (Remaster)",
+  "artist": "{{artistId}}",
+  "releaseYear": 1997,
+  "genre": "Rock",
+  "rating": 10
+}
+
+### PUT - fails, not found
+PUT {{endpoint}}/000000000000000000000000
+content-type: application/json
+x-api-key: {{key}}
+
+{
+  "title": "Nothing",
+  "artist": "{{artistId}}"
+}
+
+### PUT - fails, invalid data
+PUT {{endpoint}}/{{albumId}}
+content-type: application/json
+x-api-key: {{key}}
+
+{
+  "title": "",
+  "artist": "{{artistId}}"
+}
+
+### DELETE - fails, not found
+DELETE {{endpoint}}/000000000000000000000000
+x-api-key: {{key}}
+
+### DELETE - works
+DELETE {{endpoint}}/{{albumId}}
+x-api-key: {{key}}
+
+### Cleanup - delete the artist
+DELETE {{artists}}/{{artistId}}
+x-api-key: {{key}}
