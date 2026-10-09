@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { isValidObjectId } from 'mongoose';
 import { AlbumService } from '../services/albums';
- import { ArtistService } from '../services/artist';
-
+import { ArtistService } from '../services/artist';`
+`
 const albumService = new AlbumService();
+const artistService = new ArtistService();
 
 const getId = (req: Request): string => String(req.params.id);
 
@@ -62,11 +63,10 @@ export class AlbumController {
 
   createAlbum = async (req: Request, res: Response): Promise<void> => {
     try {
-      // the body was already checked by the validate middleware
-      // if (!(await artistService.getById(req.body.artist))) {
-      //   res.status(404).json({ message: 'Artist not found' });
-      //   return;
-      // }
+       if (!(await artistService.getById(req.body.artist))) {
+         res.status(404).json({ message: 'Artist not found' });
+         return;
+       }
       res.status(201).json(await albumService.create(req.body));
     } catch {
       res.status(500).json({ message: 'Error creating album' });
@@ -80,10 +80,10 @@ export class AlbumController {
         res.status(400).json({ message: 'Invalid id' });
         return;
       }
-      // if (!(await artistService.getById(req.body.artist))) {
-      //   res.status(404).json({ message: 'Artist not found' });
-      //   return;
-      // }
+       if (!(await artistService.getById(req.body.artist))) {
+        res.status(404).json({ message: 'Artist not found' });
+         return;
+       }
       const album = await albumService.update(id, req.body);
       if (!album) {
         res.status(404).json({ message: 'Album not found' });
