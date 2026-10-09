@@ -23,8 +23,8 @@
 
     /* Emit & Types */
     "sourceMap": true,
-    "types": ["node","vitest/globals"],
+    "types": ["node", "vitest/globals"]
   },
-  "include": ["src/**/*","tests/**/*"],
+  "include": ["src/**/*", "tests/**/*"],
   "exclude": ["node_modules", "build"]
 }

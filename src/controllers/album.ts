@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { CarService } from '../services/cars';
-import { carZodSchema } from '../model/car';
+import { CarService } from '../services/albums';
+import { carZodSchema } from '../model/albums';
  
 const carService = new CarService();
  
-export class CarController{
+export class AlbumController{
   /**
    * @openapi
    * /cars:
@@ -18,10 +18,10 @@ export class CarController{
    *       500:
    *         description: Internal server error
    */
-  getCars = async (_req: Request, res: Response): Promise<void> => {
+  getAlbums = async (_req: Request, res: Response): Promise<void> => {
     try {
-      const cars = await carService.getAllCars();
-      res.status(200).json(cars);
+      const Albums = await carService.getAllCars();
+      res.status(200).json(Albums);
     } catch (error) {
       res.status(500).json({ message: 'Error fetching cars', error });
     }

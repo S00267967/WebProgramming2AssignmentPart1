@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { CarController } from '../controllers/cars';
+import { CarController } from '../controllers/album';
 import {validate} from '../middleware/validate.middleware';
-import { carZodSchema } from '../model/car';
+import { carZodSchema } from '../model/albums';
 
 const router = Router();
 const carController = new CarController();

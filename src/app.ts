@@ -1,8 +1,9 @@
 import express, { Application, Request, Response } from "express";
-import carRoutes from './routes/cars';
+import swaggerUi from 'swagger-ui-express';
+import albumRoutes from './routes/albums';
+import artistRoutes from './routes/artists';
 import { authenticateKey } from './middleware/auth.middleware';
 import { swaggerSpec } from "./config/swagger";
-import swaggerUi from 'swagger-ui-express';
 
 export const app: Application = express();
 
@@ -13,9 +14,6 @@ app.use((req, _res, next) => {
     next();
 });
 
-app.get("/ping", (_req: Request, res: Response) => {
-    res.json({ message: "hello from Una" });
-});
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use('/api/v1/cars', authenticateKey, carRoutes);
+app.use('/api/v1/albums', authenticateKey, albumRoutes);
+app.use('/api/v1/artists', authenticateKey, artistRoutes);

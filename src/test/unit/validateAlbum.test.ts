@@ -1,4 +1,4 @@
-import { carZodSchema } from "../../model/car";
+import { carZodSchema } from "../../model/albums";
 
 const validCar = {
   make: "Ford",
