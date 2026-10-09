@@ -6,7 +6,7 @@ dotenv.config();
 const envSchema = z.object({
     PORT: z.coerce.number().int().positive(),
     NODE_ENV: z.enum(["development", "test", "production"]),
-    MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
+    MONGODB_URI: z.string().min(1, "MONGODB_URI is required")
 });
 
 const result = envSchema.safeParse(process.env);

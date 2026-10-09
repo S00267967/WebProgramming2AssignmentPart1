@@ -1,193 +1,116 @@
 import { Request, Response } from 'express';
-import { CarService } from '../services/albums';
-import { carZodSchema } from '../model/albums';
- 
-const carService = new CarService();
- 
-export class AlbumController{
-  /**
-   * @openapi
-   * /cars:
-   *   get:
-   *     summary: Retrieve all cars
-   *     tags:
-   *       - Cars
-   *     responses:
-   *       200:
-   *         description: Successfully retrieved cars
-   *       500:
-   *         description: Internal server error
-   */
-  getAlbums = async (_req: Request, res: Response): Promise<void> => {
+import { isValidObjectId } from 'mongoose';
+import { AlbumService } from '../services/albums';
+// import { ArtistService } from '../services/artists';
+
+const albumService = new AlbumService();
+// const artistService = new ArtistService();
+
+const getId = (req: Request): string => String(req.params.id);
+
+// query string values can be strings, arrays or objects, we only want strings
+const asString = (value: unknown): string | undefined =>
+  typeof value === 'string' && value !== '' ? value : undefined;
+
+export class AlbumController {
+  getAlbums = async (req: Request, res: Response): Promise<void> => {
     try {
-      const Albums = await carService.getAllCars();
-      res.status(200).json(Albums);
-    } catch (error) {
-      res.status(500).json({ message: 'Error fetching cars', error });
+      const filter: Record<string, string> = {};
+      const genre = asString(req.query.genre);
+      const artist = asString(req.query.artist);
+      if (genre) filter.genre = genre;
+      if (artist) {
+        if (!isValidObjectId(artist)) {
+          res.status(400).json({ message: 'Invalid artist id' });
+          return;
+        }
+        filter.artist = artist;
+      }
+
+      const page = Math.max(1, Number(req.query.page) || 1);
+      const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+
+      const albums = await albumService.getAll({
+        filter,
+        sort: asString(req.query.sort),
+        fields: asString(req.query.fields)?.split(',').join(' '),
+        page,
+        limit,
+      });
+      res.status(200).json(albums);
+    } catch {
+      res.status(500).json({ message: 'Error fetching albums' });
     }
   };
- 
-  /**
-   * @openapi
-   * /cars/{id}:
-   *   get:
-   *     summary: Get a car by ID
-   *     tags:
-   *       - Cars
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *     responses:
-   *       200:
-   *         description: Car found
-   *       404:
-   *         description: Car not found
-   *       500:
-   *         description: Internal server error
-   */
-  getCarById = async (req: Request, res: Response): Promise<void> => {
+
+  getAlbumById = async (req: Request, res: Response): Promise<void> => {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      const car = await carService.getCarById(id);
-      if (!car) {
-        res.status(404).json({ message: 'Car not found' });
+      const id = getId(req);
+      if (!isValidObjectId(id)) {
+        res.status(400).json({ message: 'Invalid id' });
         return;
       }
-      res.status(200).json(car);
-    } catch (error) {
-      res.status(500).json({ message: 'Error fetching car', error });
-    }
-  };
- 
- 
-  /**
-   * @openapi
-   * /cars:
-   *   post:
-   *     summary: Create a new car
-   *     tags:
-   *       - Cars
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             $ref: '#/components/schemas/CreateCarInput'
-   *     responses:
-   *       201:
-   *         description: Successfully created car
-   *       400:
-   *         description: Bad request
-   *       500:
-   *         description: Internal server error
-   */
-  createCar = async (req: Request, res: Response): Promise<void> => {
-    try {
-            const validation = carZodSchema.safeParse(req.body);
- 
-      console.log
- 
-      if (!validation.success) {
-        res.status(400).json({ message: 'Invalid car data', errors: validation.error.issues });
+      const album = await albumService.getById(id);
+      if (!album) {
+        res.status(404).json({ message: 'Album not found' });
         return;
       }
- 
-      console.log('Request body:', req.body); // Log the request body for debugging
-      const newCar = await carService.createCar(req.body);
-      res.status(201).json(newCar);
-    } catch (error) {
-      res.status(500).json({ message: 'Error inserting into MongoDB', error });
+      res.status(200).json(album);
+    } catch {
+      res.status(500).json({ message: 'Error fetching album' });
     }
   };
- 
-  /**
-   * @openapi
-   * /cars/{id}:
-   *   put:
-   *     summary: Update a car
-   *     tags:
-   *       - Cars
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             $ref: '#/components/schemas/CreateCarInput'
-   *     responses:
-   *       200:
-   *         description: Car updated
-   *       400:
-   *         description: Bad request
-   *       404:
-   *         description: Car not found
-   *       500:
-   *         description: Internal server error
-   */
-  updateCar = async (req: Request, res: Response): Promise<void> => {
+
+  createAlbum = async (req: Request, res: Response): Promise<void> => {
     try {
-      const validation = carZodSchema.safeParse(req.body);
- 
-      console.log
- 
-      if (!validation.success) {
-        res.status(400).json({ message: 'Invalid car data', errors: validation.error.issues });
+      // the body was already checked by the validate middleware
+      // if (!(await artistService.getById(req.body.artist))) {
+      //   res.status(404).json({ message: 'Artist not found' });
+      //   return;
+      // }
+      res.status(201).json(await albumService.create(req.body));
+    } catch {
+      res.status(500).json({ message: 'Error creating album' });
+    }
+  };
+
+  updateAlbum = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = getId(req);
+      if (!isValidObjectId(id)) {
+        res.status(400).json({ message: 'Invalid id' });
         return;
       }
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      const updatedCar = await carService.updateCar(id, req.body);
-      if (!updatedCar) {
-        res.status(404).json({ message: 'Car not found' });
-        return;
-            }
-      res.status(200).json(updatedCar);
-    } catch (error) {
-      res.status(500).json({ message: 'Error updating car', error });
-    }
-  };
-      
- 
-  /**
-   * @openapi
-   * /cars/{id}:
-   *   delete:
-   *     summary: Delete a car
-   *     tags:
-   *       - Cars
-   *     parameters:
-   *       - in: path
-   *         name: id
-   *         required: true
-   *         schema:
-   *           type: string
-   *     responses:
-   *       200:
-   *         description: Car deleted
-   *       404:
-   *         description: Car not found
-   *       500:
-   *         description: Internal server error
-   */
-  deleteCar = async (_req: Request, res: Response): Promise<void> => {
-    try {
-      const id = Array.isArray(_req.params.id) ? _req.params.id[0] : _req.params.id;
-      const deletedCar = await carService.deleteCar(id);
-      if (!deletedCar) {
-        res.status(404).json({ message: 'Car not found' });
+      // if (!(await artistService.getById(req.body.artist))) {
+      //   res.status(404).json({ message: 'Artist not found' });
+      //   return;
+      // }
+      const album = await albumService.update(id, req.body);
+      if (!album) {
+        res.status(404).json({ message: 'Album not found' });
         return;
       }
-      res.status(200).json(deletedCar);
-    } catch (error) {
-      res.status(500).json({ message: 'Error updating car', error });
+      res.status(200).json(album);
+    } catch {
+      res.status(500).json({ message: 'Error updating album' });
     }
   };
- 
+
+  deleteAlbum = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const id = getId(req);
+      if (!isValidObjectId(id)) {
+        res.status(400).json({ message: 'Invalid id' });
+        return;
+      }
+      const album = await albumService.delete(id);
+      if (!album) {
+        res.status(404).json({ message: 'Album not found' });
+        return;
+      }
+      res.status(200).json(album);
+    } catch {
+      res.status(500).json({ message: 'Error deleting album' });
+    }
+  };
 }

@@ -1,26 +1,45 @@
-import { CarModel, ICar } from '../model/albums'
-import { HydratedDocument } from 'mongoose';
+import { AlbumModel } from '../model/albums';
 
-export class CarService {
+export interface AlbumQuery {
+  filter: Record<string, string>;
+  sort?: string;
+  fields?: string;
+  page: number;
+  limit: number;
+}
 
-  async getAllCars(): Promise<ICar[]> {
-    return await CarModel.find().lean(); 
+export class AlbumService {
+  getAll(q: AlbumQuery) {
+    let query = AlbumModel.find(q.filter);
+    if (q.sort) query = query.sort(q.sort);          // e.g. "releaseYear" or "-releaseYear"
+    if (q.fields) query = query.select(q.fields);    // e.g. "title genre"
+    return query
+      .skip((q.page - 1) * q.limit)
+      .limit(q.limit)
+      .populate('artist');
   }
 
-  async getCarById(id: string): Promise<ICar | null> {
-    return await CarModel.findById(id).lean();
+  async getById(id: string) {
+    return await AlbumModel.findById(id).populate('artist');
   }
 
-  async createCar(carData: ICar): Promise<HydratedDocument<ICar>> {
-    const car = new CarModel(carData);
-    return await car.save();
+  async getByArtist(artistId: string) {
+    return await AlbumModel.find({ artist: artistId });
   }
 
-  async updateCar(id: string, carData: Partial<ICar>): Promise<ICar | null> {
-    return await CarModel.findByIdAndUpdate(id, carData, { returnDocument: 'after' }).lean();
+  async create(data: object) {
+    return await AlbumModel.create(data);
   }
 
-  async deleteCar(id: string): Promise<ICar | null> {
-    return await CarModel.findByIdAndDelete(id).lean();
+  async update(id: string, data: object) {
+    return await AlbumModel.findByIdAndUpdate(id, data, { returnDocument: 'after', runValidators: true });
+  }
+
+  async delete(id: string) {
+    return await AlbumModel.findByIdAndDelete(id);
+  }
+
+  async deleteByArtist(artistId: string) {
+    return await AlbumModel.deleteMany({ artist: artistId });
   }
 }

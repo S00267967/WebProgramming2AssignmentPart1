@@ -1,16 +1,15 @@
 import { Router } from 'express';
-import { CarController } from '../controllers/album';
-import {validate} from '../middleware/validate.middleware';
-import { carZodSchema } from '../model/albums';
+import { AlbumController } from '../controllers/album';
+import { validate } from '../middleware/validate.middleware';
+import { albumZodSchema } from '../model/albums';
 
 const router = Router();
-const carController = new CarController();
+const controller = new AlbumController();
 
-router.get('/', carController.getCars);
-
-router.get('/:id', carController.getCarById);
-router.post('/', validate(carZodSchema), carController.createCar);
-router.put('/:id', validate(carZodSchema), carController.updateCar);
-router.delete('/:id', carController.deleteCar);
+router.get('/', controller.getAlbums);
+router.get('/:id', controller.getAlbumById);
+router.post('/', validate(albumZodSchema), controller.createAlbum);
+router.put('/:id', validate(albumZodSchema), controller.updateAlbum);
+router.delete('/:id', controller.deleteAlbum);
 
 export default router;
