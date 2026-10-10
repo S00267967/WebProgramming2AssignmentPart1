@@ -6,7 +6,8 @@ dotenv.config();
 const envSchema = z.object({
     PORT: z.coerce.number().int().positive(),
     NODE_ENV: z.enum(["development", "test", "production"]),
-    MONGODB_URI: z.string().min(1, "MONGODB_URI is required")
+    MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
+    API_KEY: z.string().min(1, "API_KEY is required").optional(),
 });
 
 const result = envSchema.safeParse(process.env);
@@ -21,4 +22,5 @@ export const env = {
     port: result.data.PORT,
     nodeEnv: result.data.NODE_ENV,
     mongoURI: result.data.MONGODB_URI,
+    apiKey: result.data.API_KEY || "default_api_key"
 };
