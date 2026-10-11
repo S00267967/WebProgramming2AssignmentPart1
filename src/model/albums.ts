@@ -15,7 +15,9 @@ export interface IAlbum {
  *   schemas:
  *     AlbumInput:
  *       type: object
- *       required: [title, artist]
+ *       required:
+ *         - title
+ *         - artist
  *       properties:
  *         title:
  *           type: string

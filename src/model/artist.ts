@@ -13,7 +13,8 @@ export interface IArtist {
  *   schemas:
  *     ArtistInput:
  *       type: object
- *       required: [name]
+ *       required:
+ *         - name
  *       properties:
  *         name:
  *           type: string
@@ -31,11 +32,6 @@ export interface IArtist {
  *           properties:
  *             _id:
  *               type: string
- *     Error:
- *       type: object
- *       properties:
- *         message:
- *           type: string
  */
 
 // Zod checks the request body before it reaches the database
