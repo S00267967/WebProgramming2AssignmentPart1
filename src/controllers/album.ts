@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { isValidObjectId } from 'mongoose';
 import { AlbumService } from '../services/albums';
-import { ArtistService } from '../services/artist';`
-`
+import { ArtistService } from '../services/artist';
+
 const albumService = new AlbumService();
 const artistService = new ArtistService();
 
