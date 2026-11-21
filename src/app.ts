@@ -9,8 +9,13 @@ import { swaggerSpec } from './config/swagger';
 
 export const app: Application = express();
 
-// CORS must come first so the browser's OPTIONS preflight (which has no api key) succeeds
-app.use(cors({ methods: ['GET', 'POST', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
+app.use(
+  cors({
+    origin: 'http://localhost:4200',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'x-api-key'],
+  }),
+);
 app.use(express.json());
 app.use(logRequest);
 
