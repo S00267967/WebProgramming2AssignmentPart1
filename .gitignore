@@ -1,17 +1,11 @@
-# npm 
+# npm
+node_modules
+package-lock.json
+*.log
+*.gz
 
-node_modules 
+# secrets - never commit the real .env (submit it separately as the brief asks)
+.env
 
-package-lock.json 
-
-*.log 
-
-*.gz 
-
- 
-
-# build folder 
-
- 
-
-build 
+# build folder
+build
